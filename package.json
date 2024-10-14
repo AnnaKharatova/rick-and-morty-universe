@@ -1,5 +1,6 @@
 {
   "name": "rick-and-morty",
+  "home": "https://annakharatova.github.io/rick-and-morty-universe/",
   "private": true,
   "version": "0.0.0",
   "type": "module",
