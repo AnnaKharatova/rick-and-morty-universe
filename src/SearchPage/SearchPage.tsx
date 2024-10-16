@@ -23,41 +23,71 @@ interface IData {
 }
 
 function SearchPage() {
-    const [status, setStatus] = useState<string | null>(null)
-    const [popupStatus, setPopupStatus] = useState<boolean>(false)
-    const [displayedStatus, setDisplayedStatus] = useState<string | null>(null)
-    const [inputValue, setInputValue] = useState<string | null>(null)
-    const [species, setSpecies] = useState<string>()
-    const [popupSpecies, setPopupSpecies] = useState<boolean>(false)
-    const [displayedSpecies, setDisplaySpecies] = useState<string | null>(null)
-    const [filteredData, setFilteredData] = useState<IData[]>([])
 
     const storedStatus = localStorage.getItem('storedStatus')
     const storedSpecies = localStorage.getItem('storedSpecies')
     const storedName = localStorage.getItem('storedName')
     const storedSpeciesName = localStorage.getItem('storedSpeciesName')
     const storedStatusName = localStorage.getItem('storedStatusName')
+    const episodeSearch = localStorage.getItem('episode')
+
+    const [status, setStatus] = useState<string | null>(null)
+    const [popupStatus, setPopupStatus] = useState<boolean>(false)
+    const [displayedStatus, setDisplayedStatus] = useState<string | null>(null)
+    const [species, setSpecies] = useState<string>()
+    const [popupSpecies, setPopupSpecies] = useState<boolean>(false)
+    const [displayedSpecies, setDisplaySpecies] = useState<string | null>(null)
+    const [filteredData, setFilteredData] = useState<IData[]>([])
+    const [inputValue, setInputValue] = useState<string | null>('')
+    const [searchTerm, setSearchTerm] = useState<string | null>('')
+    const [filteredEpisodeData, setFilteredEpisodeData] = useState<IData[]>([])
 
     const searchStatus = status ? `status=${status}&` : ''
     const searchName = inputValue ? `name=${inputValue}&` : ''
     const searchSpecies = species ? `species=${species}` : ''
+
     const SEARCH_URL = `https://rickandmortyapi.com/api/character/?${searchName}${searchStatus}${searchSpecies}`
+
+    function getData() {
+        fetch(SEARCH_URL)
+            .then(res => res.json())
+            .then(resData => {
+                const fetchedData = JSON.parse(JSON.stringify(resData))
+                setFilteredData(fetchedData.results)
+                setFilteredEpisodeData(fetchedData.results)
+            }).catch(error => {
+                console.error("Ошибка при получении данных:", error);
+            });
+    }
 
     useEffect(() => {
         if (storedStatus) {
             setStatus(storedStatus)
             setDisplayedStatus(storedStatusName)
+            getData()
         }
         if (storedSpecies) {
             setSpecies(storedSpecies)
             setDisplaySpecies(storedSpeciesName)
+            getData()
+        }
+
+        if (episodeSearch) {
+            setSearchTerm(episodeSearch)
+            const data = filteredData.filter((item) =>
+                item.episode.some((episode) =>
+                    episode.toLowerCase().includes(episodeSearch)
+                )
+            )
+            setFilteredEpisodeData(data)
         }
     }, [storedStatus, storedSpecies, storedSpeciesName, storedStatusName])
 
     useEffect(() => {
         if (storedName) {
             setInputValue(storedName)
-        }
+            getData()
+        } else { setInputValue('') }
     }, [])
 
     function handleStatusChange(event: any) {
@@ -79,29 +109,32 @@ function SearchPage() {
             localStorage.setItem('storedSpecies', value)
             localStorage.setItem('storedSpeciesName', name)
         }
+        getData()
     }
 
     useEffect(() => {
         if (inputValue) {
             localStorage.setItem('storedName', inputValue)
+            getData()
         }
-    })
+    }, [inputValue])
+
+    useEffect(() => {
+        if (searchTerm) {
+            const data = filteredData.filter((item) =>
+                item.episode.some((episode) =>
+                    episode.toLowerCase().includes(searchTerm)
+                )
+            )
+            setFilteredEpisodeData(data)
+            localStorage.setItem('episode', searchTerm)
+        }
+    }, [searchTerm])
 
     useEffect(() => {
         if (species || status || inputValue)
             getData()
     }, [species, status, inputValue])
-
-    function getData() {
-        fetch(SEARCH_URL)
-            .then(res => res.json())
-            .then(resData => {
-                const fetchedData = JSON.parse(JSON.stringify(resData))
-                setFilteredData(fetchedData.results)
-            }).catch(error => {
-                console.error("Ошибка при получении данных:", error);
-            });
-    }
 
     return (
         <main className="flex flex-col">
@@ -113,7 +146,8 @@ function SearchPage() {
             <div className="relative flex gap-8">
                 <div className="w-1/2">
                     <p className="text-2xl">Жив ?</p>
-                    <button className="flex justify-between w-full border border-solid border-white rounded-xl px-3 py-1" onClick={() => { setPopupStatus(!popupStatus) }}>
+                    <button className="flex justify-between w-full border border-solid border-white rounded-xl px-3 py-1"
+                        onClick={() => { setPopupStatus(!popupStatus) }}>
                         <span>{displayedStatus}</span>
                         {!popupStatus ? <span>&#9660;</span> : <span>&#9650;</span>}
                     </button>
@@ -156,12 +190,13 @@ function SearchPage() {
             </div>
             <label className="text-2xl mt-8">Эпизод</label>
             <div className="border border-solid border-white rounded-xl my-5" >
-                <input className=" outline-none py-1.5 px-2.5 bg-inherit " type='number' />
+                <input className=" outline-none py-1.5 px-2.5 bg-inherit " type='text' value={searchTerm || ''}
+                    onChange={(event) => setSearchTerm(event.target.value.toLowerCase())} />
             </div>
             <h3 className="text-3xl">Найдено</h3>
-            {filteredData && filteredData.length > 0 &&
+            {filteredEpisodeData && filteredEpisodeData.length > 0 &&
                 <ul className='gap-x-20'>
-                    {filteredData.map(person => (
+                    {filteredEpisodeData.map(person => (
                         <li key={person.id} className=' flex  cursor-pointer border mb-2 border-solid border-white rounded-2xl p-2.5'>
                             <Link className=' flex justify-between w-full gap-y-20' to={(`person/${person.id}`)}>
                                 <p>{person.name}</p>

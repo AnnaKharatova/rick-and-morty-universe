@@ -54,7 +54,7 @@ function PersonPage() {
             {person.species && <p className="text-center">Раза: {person.species}</p>}
             {person.type && <p className="text-center">Тип: {person.type}</p>}
             {person.episode && <p className="text-center">Эпизодов с его участием: {person.episode.length}</p>}
-            <button className="mx-auto cursor-pointer" onClick={() => navigate('/')}>Назад</button>
+            <button className="mx-auto cursor-pointer" onClick={() => navigate('/rick-and-morty-universe/')}>Назад</button>
         </>
     );
 }
