@@ -199,11 +199,11 @@ function SearchPage() {
                     {filteredEpisodeData.map(person => (
                         <li key={person.id} className=' flex  cursor-pointer border mb-2 border-solid border-white rounded-2xl p-2.5'>
                             <Link className=' flex justify-between w-full gap-y-20' to={(`person/${person.id}`)}>
-                                <p>{person.name}</p>
-                                <p>{person.status}</p>
-                                <p>{person.gender}</p>
-                                <p>{person.species}</p>
-                                <p>{person.location.name}</p>
+                                <p className='overflow-hidden text-nowrap text-ellipsis'>{person.name}</p>
+                                <p className='overflow-hidden text-nowrap text-ellipsis'>{person.status}</p>
+                                <p className='overflow-hidden text-nowrap text-ellipsis'>{person.gender}</p>
+                                <p className='overflow-hidden text-nowrap text-ellipsis'>{person.species}</p>
+                                <p className='overflow-hidden text-nowrap text-ellipsis'>{person.location.name}</p>
                             </Link>
                         </li>
                     ))}
